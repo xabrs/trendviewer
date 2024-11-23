@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trend Viewer</title>
+  <!--link href="lib/vue/roboto.css" rel="stylesheet"-->
+  <link href="lib/vue/materialdesignicons.min.css" rel="stylesheet">
+  <link href="lib/vue/vuetify.min.css" rel="stylesheet">
+  <link href="lib/Chart/Chart.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui"/>
+  <meta charset="utf-8"/>
+  
+  <script type="text/javascript" src="lib/twgl/twgl-full.min.js"></script>
+  <script type="text/javascript" src="lib/d3/d3.min.js"></script>
+  <script type="text/javascript" src="lib/vue/vue.min.js"></script>
+  <script type="text/javascript" src="lib/vue/vuetify.min.js"></script>
+  <script type="text/javascript" src="lib/Chart/Chart.js"></script>
+  <script type="text/javascript" src="lib/plugins/MasterScada.js"></script>
+  <script type="text/javascript" src="lib/plugins/DataSource.js"></script>
+  <script type="text/javascript" src="lib/html2canvas/html2canvas.js"></script>
+  <script type="text/javascript" src="lib/main.js"></script>
+  <style type="text/css">
+    /*  */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #chartcontainer, #chartcontainer * {
+        visibility: visible;
+      }
+    }
+
+    /* Переписываем ненужные стили vuetify */
+    html {
+      overflow-y: hidden;
+    }
+
+    /* Для работы на маленьких экранах */
+    .v-toolbar__content {
+      overflow-x: auto;
+    }
+    .v-toolbar__content::-webkit-scrollbar {
+        height: 5px;
+        width: 0px;
+        background-color: #F7F7F7;
+    }
+    .v-toolbar__content::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgb(0 0 0 / 30%);
+        background-color: #BFBFBF;
+    }
+    .v-toolbar__content::-webkit-scrollbar-track {
+        border-radius: 2px;
+    }
+    /*  */
+
+
+    .v-main {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    .v-navigation-drawer__content {
+      display: flex;
+      flex-direction: column;
+      resize: horizontal;
+      min-width: 300px;
+      padding-top: 8px;
+    }
+    .treeview-container {
+      flex: 1; 
+      overflow: auto;
+    }
+    .treeview-container::-webkit-scrollbar {
+        width: 5px;
+        background-color: #F7F7F7;
+    }
+    .treeview-container::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgb(0 0 0 / 30%);
+        background-color: #BFBFBF;
+    }
+    .treeview-container::-webkit-scrollbar-track {
+        border-radius: 2px;
+    }
+    .v-treeview span {
+      cursor: pointer;
+    }
+    .v-treeview--dense .v-treeview-node__root {
+        min-height: 24px !important;
+    }
+    .v-application--is-ltr .v-treeview-node__checkbox {
+        margin-left: 0px;
+    }
+    .sidebar {
+      flex: 0;
+    }
+    aside.v-navigation-drawer {
+      top:  48px !important;
+      height: 100%;
+      width: unset !important;
+      min-width: 300px;
+    }
+    .collapsed {
+      width: 0px !important;
+    }
+
+    .v-menu__content {
+      max-height: 80%;
+    }
+    .v-menu__content::-webkit-scrollbar {
+        width: 5px;
+        background-color: #F7F7F7;
+    }
+    .v-menu__content::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgb(0 0 0 / 30%);
+        background-color: #BFBFBF;
+    }
+    .v-menu__content::-webkit-scrollbar-track {
+        border-radius: 2px;
+    }
+
+    #chartcontainer {
+      height: 100%;
+      flex: 1; 
+      overflow-y: auto;
+      padding: 4px;
+    }
+    #chartcontainer::-webkit-scrollbar {
+        width: 5px;
+        background-color: #F7F7F7;
+    }
+    #chartcontainer::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgb(0 0 0 / 30%);
+        background-color: #BFBFBF;
+    }
+    #chartcontainer::-webkit-scrollbar-track {
+        border-radius: 2px;
+    }
+
+    header .col {
+      padding: 0 !important;
+      /*vertical-align: middle;*/
+    }
+    .v-btn:not(.v-btn--round).v-size--small {
+      min-width: 20px;
+    }
+    .button-group {
+      display: inline-flex;
+      padding: 0px 12px;
+    }
+    .button-group .v-btn {
+      padding: 0px 4px !important;
+    }
+    .dateinput {
+       width: 180px;
+       flex: none;
+       padding: 0px 12px;
+    }
+    
+
+    /* Стили для всплывающих алертов */
+    .v-alert {
+      pointer-events: all;
+      display: block;
+      margin: 0px 12px 5px 12px;
+      height: auto;
+    }
+    .v-alert.error {
+      background-color: rgb(176, 0, 32) !important;
+    }
+    .v-alert.warning {
+      color: white;
+      background-color: rgb(251, 140, 0) !important;
+    }
+    
+    .overlay-bottom-right {
+      position: absolute;
+      bottom: 0px;
+      right: 0px;
+      max-width: 50%;
+      min-width: 344px;
+    }
+    .overlay-flex {
+      pointer-events: none;
+      position: relative;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: flex-end;
+      justify-content: flex-end;
+    }
+    .overlay-content {
+      pointer-events: none;
+      z-index: 9999;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+    .no-overflow{
+      overflow: visible !important;
+    }
+    .v-alert pre {
+      font: inherit;
+    }
+  </style>
+</head>
+<body>
+  <script id="vs" type="notjs">
+    attribute vec2 a_position;
+    uniform vec2 u_resolution;
+    uniform vec2 u_translation;
+
+    void main() {
+       vec2 position = a_position - u_translation;
+       vec2 zeroToOne = position / u_resolution;
+       vec2 zeroToTwo = zeroToOne * 2.0;
+       vec2 clipSpace = zeroToTwo - 1.0;
+       gl_Position = vec4(clipSpace, 0.0, 1.0);
+    }
+  </script>
+  <script id="fs" type="notjs">
+    precision highp  float;
+    uniform vec4 u_color;
+
+    void main() {
+       gl_FragColor = u_color;
+    }
+  </script>
+  <div id="app" >
+    <v-app>
+      <v-app-bar dense app  >
+        <v-app-bar-nav-icon
+          v-on:click="sidebarExpanded=!sidebarExpanded"
+        ></v-app-bar-nav-icon>
+        <!-- <img src="logo.png"> -->
+        <v-toolbar-title>{{ t('$vuetify.appTitle') }}</v-toolbar-title>
+
+        <v-spacer></v-spacer>
+        <!-- Середина бара -->
+        <v-text-field  hide-details dense 
+          class="dateinput"
+          :title="t('$vuetify.dateStart')" 
+          :label="t('$vuetify.dateStart')"
+          style="padding-top: 8px;"
+          v-model="datestart"
+          :rules="[validateDateTime]"
+          @keypress="restrictInput"
+          @blur="formatDateTime"></v-text-field>
+        <v-text-field hide-details dense
+          class="dateinput"
+          :title="t('$vuetify.dateEnd')"  
+          :label="t('$vuetify.dateEnd')"   
+          style="padding-top: 8px;"
+          v-model="dateend"
+          :rules="[validateDateTime]"
+          @keypress="restrictInput"
+          @blur="formatDateTime"
+          ></v-text-field>
+        
+        <v-menu offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn small elevation="0" tile color="primary" @click="drawselected(false)"
+              :disabled="tree_selected.length==0"
+              :loading="chartLoading"
+            >
+              {{ t('$vuetify.drawButton') }}
+              <v-icon right v-bind="attrs" v-on="on"
+                @click="arguments[0].stopPropagation();"
+                >mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list dense>
+            <v-list-item @click="drawselected(true)" :disabled="tree_selected.length==0">
+              <v-list-item-title>{{ t('$vuetify.drawNewButton') }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- Кнопки для работы с временем -->
+        <div class="button-group">
+          <v-menu
+            open-on-hover
+            offset-y
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn small icon  v-bind="attrs" v-on="on">
+                <v-icon small>mdi-calendar-clock</v-icon>
+              </v-btn>
+            </template>
+            <v-list dense style="cursor: pointer;">
+              <v-list-item @click="let d=new Date();dateend=datetimeformat(d);d.setTime(d.getTime()-3*3600000);datestart=datetimeformat(d);">
+                <v-list-item-title>{{ t('$vuetify.dt.h3') }}</v-list-item-title></v-list-item>
+              <v-list-item @click="let d=new Date();dateend=datetimeformat(d);d.setHours(0);d.setMinutes(0);d.setSeconds(0);datestart=datetimeformat(d);">
+                <v-list-item-title>{{ t('$vuetify.dt.today') }}</v-list-item-title></v-list-item>
+              <v-list-item @click="let d=new Date();d.setHours(0);d.setMinutes(0);d.setSeconds(0);dateend=datetimeformat(d);d.setDate(d.getDate()-1);datestart=datetimeformat(d);">
+                <v-list-item-title>{{ t('$vuetify.dt.yestarday') }}</v-list-item-title></v-list-item>
+              <v-list-item @click="let d=new Date();dateend=datetimeformat(d);d.setTime(d.getTime()-3*86400000);datestart=datetimeformat(d);">
+                <v-list-item-title>{{ t('$vuetify.dt.day3') }}</v-list-item-title></v-list-item>
+              <v-list-item @click="let d=new Date();dateend=datetimeformat(d);d.setTime(d.getTime()-7*86400000);datestart=datetimeformat(d);">
+                <v-list-item-title>{{ t('$vuetify.dt.day7') }}</v-list-item-title></v-list-item>
+              <v-list-item @click="let d=new Date();d.setHours(0);d.setMinutes(0);d.setSeconds(0);dateend=datetimeformat(d);d.setDate(1);datestart=datetimeformat(d);">
+                <v-list-item-title>{{ t('$vuetify.dt.monthCurrent') }}</v-list-item-title></v-list-item>
+              <v-list-item @click="let d=new Date();d.setDate(1);d.setHours(0);d.setMinutes(0);d.setSeconds(0);dateend=datetimeformat(d);d.setMonth(d.getMonth()-1);datestart=datetimeformat(d);">
+                <v-list-item-title>{{ t('$vuetify.dt.monthPrev') }}</v-list-item-title></v-list-item>
+            </v-list>
+          </v-menu>
+          <v-btn small elevation="0" tile @click="
+            datestart=datetimeformat(new Date(datetimeparse(datestart).setMonth(datetimeparse(datestart).getMonth()-1)));
+            dateend=datetimeformat(new Date(datetimeparse(dateend).setMonth(datetimeparse(dateend).getMonth()-1)))"
+            >{{ t('$vuetify.dt.subMonth') }}</v-btn>
+          <v-btn small elevation="0" tile @click="
+            datestart=datetimeformat(new Date(datetimeparse(datestart).getTime() - 86400000));
+            dateend=datetimeformat(new Date(datetimeparse(dateend).getTime() - 86400000))">{{ t('$vuetify.dt.subDay') }}</v-btn>
+          <v-btn small elevation="0" tile @click="
+            datestart=datetimeformat(new Date(datetimeparse(datestart).getTime() - 3600000));
+            dateend=datetimeformat(new Date(datetimeparse(dateend).getTime() - 3600000));">{{ t('$vuetify.dt.subHour') }}</v-btn>
+          <v-btn small elevation="0" tile @click="
+            let dt = datetimeparse(dateend)-datetimeparse(datestart);
+            datestart=datetimeformat(new Date(datetimeparse(datestart).getTime() - dt));
+            dateend=datetimeformat(new Date(datetimeparse(dateend).getTime() - dt));
+            ">←</v-btn>
+          <v-btn small elevation="0" tile @click="
+            if (charts.length>0) { let dd = charts[0].d3.x.domain();
+            datestart=datetimeformat(new Date(dd[0]));
+            dateend=datetimeformat(new Date(dd[1]));}
+            ">↔</v-btn>
+          <v-btn small elevation="0" tile @click="
+            let dt = datetimeparse(dateend)-datetimeparse(datestart);
+            datestart=datetimeformat(new Date(datetimeparse(datestart).getTime() + dt));
+            dateend=datetimeformat(new Date(datetimeparse(dateend).getTime() + dt));
+            ">→</v-btn>
+          <v-btn small elevation="0" tile @click="
+            datestart=datetimeformat(new Date(datetimeparse(datestart).getTime() + 3600000));
+            dateend=datetimeformat(new Date(datetimeparse(dateend).getTime() + 3600000));">{{ t('$vuetify.dt.addHour') }}</v-btn>
+          <v-btn small elevation="0" tile @click="
+            datestart=datetimeformat(new Date(datetimeparse(datestart).getTime() + 86400000));
+            dateend=datetimeformat(new Date(datetimeparse(dateend).getTime() + 86400000));">{{ t('$vuetify.dt.addDay') }}</v-btn>
+          <v-btn small elevation="0" tile @click="
+            datestart=datetimeformat(new Date(datetimeparse(datestart).setMonth(datetimeparse(datestart).getMonth()+1)));
+            dateend=datetimeformat(new Date(datetimeparse(dateend).setMonth(datetimeparse(dateend).getMonth()+1)))"
+            >{{ t('$vuetify.dt.addMonth') }}</v-btn>
+        </div>
+        
+        <!-- Кнопки тулбара -->
+        <v-spacer></v-spacer>
+        <v-btn icon small 
+          :title="t('$vuetify.btnStatistics')" @click="()=>{modal_app.modal_analyze = !modal_app.modal_analyze;}">
+          <v-icon>mdi-poll</v-icon>
+        </v-btn>
+        <v-btn icon small 
+          :title="t('$vuetify.btnTable')" @click="()=>{modal_app.modal_datatables = !modal_app.modal_datatables;}">
+          <v-icon>mdi-table-large</v-icon>
+        </v-btn>
+        <v-btn icon small 
+          :title="t('$vuetify.btnExport')" @click="()=>{modal_app.modal_export = !modal_app.modal_export;}">
+          <v-icon>mdi-file-export</v-icon>
+        </v-btn>
+        <v-btn icon small 
+          :title="t('$vuetify.btnPrint')" @click="()=>{window.print();}">
+          <v-icon>mdi-printer</v-icon>
+        </v-btn>
+        <v-btn icon small 
+          :title="t('$vuetify.btnScreenshot')" @click="()=>{save_screenshot();}">
+          <v-icon>mdi-camera</v-icon>
+        </v-btn>
+        
+        <v-btn icon small :color="$vuetify.theme.isDark ? '#ffffff':'#1e1e1e'" 
+          :title="t('$vuetify.btnThemeToggle')" 
+          v-on:click="
+          $vuetify.theme.isDark=!$vuetify.theme.isDark; 
+          localStorage.setItem('darkTheme',$vuetify.theme.isDark)">
+          <v-icon>mdi-theme-light-dark</v-icon>
+        </v-btn>
+        <v-btn icon small 
+          :title="t('$vuetify.btnLanguage')" 
+          @click="localeToggle">
+          <v-icon>mdi-earth</v-icon>
+        </v-btn>
+        <!-- <v-btn icon small 
+          :title="t('$vuetify.btnSettings')" @click="()=>{modal_app.modal_settings = true;}">
+          <v-icon>mdi-cogs</v-icon>
+        </v-btn> -->
+        <v-btn icon small 
+          :title="t('$vuetify.btnHelp')" @click="()=>{window.open('help.html','trendViewerReadme', 'width=800,height=600');}">
+          <v-icon>mdi-help-box</v-icon>
+        </v-btn>
+      </v-app-bar>
+      <v-main>
+        <v-container fluid class="pa-0 fill-height">
+          <v-row class="fill-height pa-0 ma-0">
+            <div class="sidebar fill-height" :class="{ collapsed: !sidebarExpanded }">
+              <v-navigation-drawer
+                v-model="sidebarExpanded">
+                <v-menu offset-y class>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      v-bind="attrs"
+                      v-on="on"
+                      class="ma-2"
+                      :loading="treeLoading"
+                    >
+                      {{ t('$vuetify.menuTitle') }}
+                    </v-btn>
+                  </template>
+                  <v-list dense style="cursor: pointer;">
+                    <v-list-item @click="tree_open = []">
+                      <v-list-item-icon><v-icon>mdi-chevron-up</v-icon></v-list-item-icon>
+                      <v-list-item-title>{{ t('$vuetify.menuCollapse') }}</v-list-item-title></v-list-item>
+                    <v-list-item @click="tree_selected = []">
+                      <v-list-item-icon><v-icon>mdi-checkbox-multiple-blank-outline</v-icon></v-list-item-icon>
+                      <v-list-item-title>{{ t('$vuetify.menuUncheck') }}</v-list-item-title></v-list-item>
+                    <v-list-item @click="checkDrawed">
+                      <v-list-item-icon><v-icon>mdi-checkbox-multiple-marked-outline</v-icon></v-list-item-icon>
+                      <v-list-item-title>{{ t('$vuetify.menuCheckDrawed') }}</v-list-item-title></v-list-item>
+                    <v-list-item @click="savedSetsSave">
+                      <v-list-item-icon><v-icon>mdi-content-save</v-icon></v-list-item-icon>
+                      <v-list-item-title>{{ t('$vuetify.menuSaveList') }}</v-list-item-title></v-list-item>
+                    <v-list-item @click="savedSetsClear">
+                      <v-list-item-icon><v-icon>mdi-close-circle-outline</v-icon></v-list-item-icon>
+                      <v-list-item-title>{{ t('$vuetify.menuClearList') }}</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item
+                      v-for="(item, index) in set_saved"
+                      :key="index"
+                      @click="savedSetApply(index)"
+                    > 
+                      <v-list-item-icon><v-icon>mdi-format-list-bulleted-square</v-icon></v-list-item-icon>
+                      <v-list-item-title>{{ item.title }}</v-list-item-title>
+                      <v-list-item-action @click.stop="savedSetRemove(index)" style="margin: 0;">
+                        <v-btn icon>
+                          <v-icon>mdi-delete</v-icon>
+                        </v-btn>
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+                  <v-text-field
+                    v-model="tree_search"
+                    :label="t('$vuetify.search')"
+                    clearable
+                    dense
+                    hide-details
+                    outlined
+                    clear-icon="mdi-close-circle-outline"
+                    class="ma-2"
+                    style="flex: 0;"
+                  ></v-text-field>
+                  <div
+                    class="treeview-container">
+                    
+                    <v-treeview
+                      ref="treeview"
+                      selectable
+                      activetable
+                      hoverable
+                      item-disabled="locked"  
+                      dense
+                      return-object
+                      item-key="unique_key"
+                      :open.sync="tree_open"
+                      :items="tree"
+                      :search="tree_search"
+                      v-model="tree_selected"
+                    >
+                      <template v-slot:label="{ item }">
+                          <span :title="item.title" 
+                            v-on:click="(event)=>{treeviewClick(item,event.ctrlKey)}"
+                            >{{ item.name }}</span>
+                      </template>
+                    </v-treeview>
+                  </div>
+              </v-navigation-drawer>
+            </div>
+            
+            <!-- Контент справа -->
+            <div id="chartcontainer"></div>
+          </v-row>
+        </v-container>
+      </v-main>       
+    <div class="overlay-content">
+      <div class="overlay-bottom-right">
+        <div class="overlay-flex">
+          <v-alert class="ma-1" 
+            dense
+            v-for="alert in alerts"
+            min-width="344"
+            :type="alert['type']">{{alert['text']}}
+          </v-alert>
+        </div>
+      </div>
+    </div>  
+    </v-app> 
+  </div>
+
+  <!-- Вспомогательные окна -->
+  <div id="modal">
+    <v-row justify="center">
+      <v-dialog v-model="modal_export"
+        persistent
+        scrollable
+        max-width="600px"
+        >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">{{ t('$vuetify.export.title') }}</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12" sm="3">
+                  <p>{{t('$vuetify.export.timeRange')}}</p>
+                  <v-radio-group v-model='export_all' dense>
+                    <v-radio :label="t('$vuetify.export.timeRangeAll')" value="0"></v-radio>
+                    <v-radio :label="t('$vuetify.export.timeRangeCurrentView')" value="1"></v-radio>
+                  </v-radio-group>
+                  <p>{{ t('$vuetify.export.decimalSeparator')}}</p>
+                  <v-radio-group v-model="export_decimal_separator" dense>
+                    <v-radio label="." value="0"></v-radio>
+                    <v-radio label="," value="1"></v-radio>
+                  </v-radio-group>
+                </v-col>
+                <v-col cols="3" sm="3">
+                  <p>{{t('$vuetify.export.interval')}}</p>
+                  <v-radio-group v-model="export_interval" dense>
+                    <v-radio :label="('1 '+t('$vuetify.export.seconds'))" value="0"></v-radio>
+                    <v-radio :label="('1 '+t('$vuetify.export.minutes'))" value="1"></v-radio>
+                    <v-radio :label="('5 '+t('$vuetify.export.minutes'))" value="2"></v-radio>
+                    <v-radio :label="('10 '+t('$vuetify.export.minutes'))" value="3"></v-radio>
+                    <v-radio :label="('30 '+t('$vuetify.export.minutes'))" value="4"></v-radio>
+                    <v-radio :label="('1 '+t('$vuetify.export.hour'))" value="5"></v-radio>
+                    <v-radio :label="('1 '+t('$vuetify.export.day'))" value="6"></v-radio>
+                  </v-radio-group>
+                </v-col>
+                <v-col cols="3" sm="3">
+                  <p>{{t('$vuetify.export.function')}}</p>
+                  <v-radio-group dense disabled>
+                    <v-radio :label="t('$vuetify.export.functionNothing')" value="0"></v-radio>
+                    <v-radio :label="t('$vuetify.export.functionAverage')" value="1"></v-radio>
+                    <v-radio :label="t('$vuetify.export.functionMin')" value="2"></v-radio>
+                    <v-radio :label="t('$vuetify.export.functionMax')" value="3"></v-radio>
+                    <v-radio :label="t('$vuetify.export.functionAll')" value="4"></v-radio>
+                  </v-radio-group>
+                </v-col>
+                <v-col cols="3" sm="3">
+                  <p>{{t('$vuetify.export.delimiter')}}</p>
+                  <v-radio-group v-model="export_delimiter" dense>
+                    <v-radio label="Tab" value="0"></v-radio>
+                    <v-radio label=" ;" value="1"></v-radio>
+                    <v-radio label=" ," value="2"></v-radio>
+                    <v-radio label=" |" value="3"></v-radio>
+                  </v-radio-group>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col>
+                <v-text-field  hide-details dense 
+                  :title="t('$vuetify.export.dateTimeFormatTitle')"
+                  :label="t('$vuetify.export.dateTimeFormatLabel')"
+                  style="padding-top: 8px;"
+                  v-model="export_datetimeformat"
+                  :rules="[validateExportDateTimeFormat]"
+                  ></v-text-field>
+                  <p>{{export_datetimeformat_test}}</p>
+                  <v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="modal_export = false"
+            >
+              {{ t('$vuetify.export.close') }}
+            </v-btn>
+            <v-btn
+              color="blue darken-1"
+              text
+              :disabled="export_disabled"
+              @click="exportCSV"
+            >
+              {{ t('$vuetify.export.export') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="modal_analyze"
+        persistent
+        scrollable
+        >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">{{ t('$vuetify.analyze.title') }}</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-simple-table>
+                <template v-slot:default>
+              <!-- <table id="modal_analyze_table"> -->
+                <thead> 
+                  <th>{{ t('$vuetify.analyze.name') }}</th>
+                  <th>{{ t('$vuetify.analyze.tag') }}</th>
+                  <th>{{ t('$vuetify.analyze.count') }}</th>
+                  <th>{{ t('$vuetify.analyze.minCom') }}</th>
+                  <th>{{ t('$vuetify.analyze.maxCom') }}</th>
+                  <th>{{ t('$vuetify.analyze.minCur') }}</th>
+                  <th>{{ t('$vuetify.analyze.maxCur') }}</th>
+                  <th>{{ t('$vuetify.analyze.desc') }}</th>
+                </thead>
+                <tbody>
+                  <tr v-for="row in analyze_data">
+                    <td v-for="r in row" v-html="r"></td>
+                  </tr>
+                </tbody>
+              <!-- </table> -->
+                </template>
+              </v-simple-table>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="modal_analyze = false"
+            >
+              {{ t('$vuetify.analyze.close') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>  
+
+      <v-dialog v-model="modal_settings"
+        persistent
+        scrollable
+        >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">{{ t('$vuetify.settings.title') }}</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col
+                  cols="12"
+                  md="11"
+                > 
+                </v-col>
+              </v-row>
+              </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="modal_settings = false"
+            >
+              {{ t('$vuetify.settings.close') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="modal_datatables"
+        persistent
+        scrollable
+        >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">{{ t('$vuetify.datatables.title') }}</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-select
+                v-if="!datatables.all_in"
+                v-model="datatables.selected"
+                :items="datatables.select_items"
+                :label="t('$vuetify.datatables.select')"
+                dense
+                outlined
+                item-text="title"
+                item-value="id"
+                single-line
+              ></v-select>
+              <v-data-table
+                dense
+                :headers="localizedHeaders"
+                :items="datatables.items"
+                :items-per-page="50"
+                class="elevation-1"
+                :footer-props="{
+                  itemsPerPageOptions:[10,50,200,1000],
+                  showFirstLastPage: true,
+                }"
+              >
+                <template #item.d="{ item }">
+                  {{ formatDateTime(item) }}
+                </template>
+              </v-data-table>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="datatables_copy"
+            >
+              {{ t('$vuetify.datatables.copy') }}
+            </v-btn>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="modal_datatables = false"
+            >
+              {{ t('$vuetify.datatables.close') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog  v-model="modal_color_picker"
+        width="300"
+        >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">{{ t('$vuetify.colorPicker.title') }}</span>
+          </v-card-title>
+          <v-color-picker
+            v-model="color_picker.model"
+            mode="hexa"
+            dot-size="21"
+            swatches-max-height="141"
+          ></v-color-picker>
+          
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              dense
+              color="blue darken-1"
+              text
+              @click="color_picker.model=color_picker.saved;modal_color_picker=false;"
+            >
+              {{ t('$vuetify.colorPicker.cancel') }}
+            </v-btn>
+            <v-btn
+              dense
+              color="blue darken-1"
+              text
+              @click="modal_color_picker = false"
+            >
+              {{ t('$vuetify.colorPicker.close') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>  
+    </v-row></div>
+
+  <script>
+  main();
+  modal_app = modal();
+  </script>
+
+</body>
+</html>
+

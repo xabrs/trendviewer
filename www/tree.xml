@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+Group attributes:
+name - display name in the tree
+Optional:
+source - Specifies the source of the data. Passed to child elements.
+
+Tag attributes:
+name - display name in the tree
+tag - name, tag number in the data source.
+Optional:
+title - tooltip. You can use &#10; for line feed.
+calc - formula. A number is substituted for "v". Examples: v*v, 10-(v).
+       There are predefined formulas FtoC, psitokpa
+type - data type. Not used.
+source - data source
+ -->
+<tree name="Custom tree.xml">
+	<Group name="Group0"><Tag tag="No source, No name"/></Group>
+	<Group name="Group1">
+		<Group source="Randomizer" name="Company name">
+			<Group name="Compressor room">
+				<Tag tag="1" name="Pout, kpa" calc="psitokpa"/>
+				<Tag tag="1" name="t indoor,C" calc="FtoC"/>
+				<Tag tag="1" name="t outdoor,C" calc="FtoC"/>
+				<Group name="Compressor 1">
+					<Tag tag="2" name="Comp 1 - P,bar"/>
+					<Tag tag="2" name="Comp 1 - t,C"/>
+					<Tag tag="2" calc="(Math.round(v+10)%5)" name="Comp 1 - Work mode"/>
+					<Tag tag="2" name="Comp 1 - Motor temp U, C"/>
+					<Tag tag="2" name="Comp 1 - Motor temp V, C"/>
+					<Tag tag="2" name="Comp 1 - Motor temp W, C"/>
+				</Group>
+				<Group name="Compressor 2">
+					<Tag tag="2" name="Comp 2 - P,bar"/>
+					<Tag tag="2" name="Comp 2 - t,C"/>
+					<Tag tag="2" calc="(Math.round(v+10)%5)" name="Comp 2 - Work mode"/>
+					<Tag tag="2" name="Comp 2 - Motor temp U, C"/>
+					<Tag tag="2" name="Comp 2 - Motor temp V, C"/>
+					<Tag tag="2" name="Comp 2 - Motor temp W, C"/>
+				</Group>
+				<Group name="Compressor 3">
+					<Tag tag="2" name="Comp 3 - P,bar"/>
+					<Tag tag="2" name="Comp 3 - t,C"/>
+					<Tag tag="2" calc="(Math.round(v+10)%5)" name="Comp 3 - Work mode"/>
+					<Tag tag="2" name="Comp 3 - Motor temp U, C"/>
+					<Tag tag="2" name="Comp 3 - Motor temp V, C"/>
+					<Tag tag="2" name="Comp 3 - Motor temp W, C"/>
+				</Group>
+				<Group name="Fans">
+					<Tag tag="1" calc="(Math.round(v+10)%2)" name="Exhaust fan 1" type="b"/>
+					<Tag tag="6" calc="(Math.round(v+10)%2)" name="Exhaust fan 2"/>
+					<Tag tag="2" calc="(Math.round(v+10)%2)" name="Exhaust fan 3"/>
+				</Group>
+				<Tag tag="2" calc="(Math.round(v+10)%2)" name="Door sensor"/>
+			</Group>
+			<Group name="Pump station">
+				<Tag tag="1" name="Pump 1, kW" title="Pump 1"/>
+				<Tag tag="1" name="Pump 2, kW"/>
+				<Tag tag="1" name="Pump 3, kW"/>
+				<Tag tag="1" name="Pump 4, kW"/>
+				<Tag tag="1" name="Pump 5, kW"/>
+				<Tag tag="1" name="Pump 6, kW"/>
+				<Tag tag="1" name="Pump 7, kW"/>
+				<Tag tag="1" name="Pump 8, kW"/>
+				<Tag tag="1" name="Pump 9, kW"/>
+			</Group>
+			<Group source="Zabbix" name="IT">
+				<Group name="UPS temperatures">
+					<Tag tag="2" name="t UPS cab 2, С"/>
+					<Tag tag="2" name="t UPS cab 3, С"/>
+					<Tag tag="2" name="t UPS server main, C"/>
+					<Tag tag="2" name="t UPS server res, C"/>
+				</Group>
+				<Group name="network statistsic">
+					<Tag tag="2" name="Uplink recieved, MBps"/>
+					<Tag tag="2" name="Uplink sent, MBps"/>
+					<Tag tag="2" name="NAS, MBps"/>
+					<Tag tag="2" name="NAS, MBps"/>
+				</Group>
+				<Tag source="Randomizer" tag="2" name="Ping, ms" calc="2"/>
+			</Group>
+		</Group>
+	</Group>
+</tree>
+

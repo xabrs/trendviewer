@@ -1,0 +1,6 @@
+2023/11/23 v1.1
+*backend
+add: DeltaV, COMTRADE
+
+*frontend
+add: line renaming

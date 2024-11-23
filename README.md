@@ -10,7 +10,7 @@
 
 ## Features
 
- - View data from CSV, SQLite, Simatic HMI RDB files, Weintek DB files, Citect SCADA, Zabbix, MasterSCADA 4D SQLite.
+ - View data from CSV, SQLite, Simatic HMI RDB files, Weintek DB files, Citect SCADA, Zabbix, MasterSCADA 4D SQLite, COMTRADE, DeltaV xfc file.
  - Some sources use native DLL functions, which are not included in the archive, as these types of data sources are uncommon. If needed, you can write them yourself, as...
  - Easily add custom data sources using Python. You can even write a plugin that queries archives from the device via Modbus and displays them.
  - Portable. No installation required. Works on both Windows and Linux.
@@ -23,7 +23,7 @@
 1. Download the archive.
 2. Run `run.bat` on Windows or `run.sh` on Linux.
 3. Open the web interface in your browser.
-4. Edit `trend_viewer.py` according to your needs and use it.
+4. Edit `server.py` according to your needs and use it.
 
 
 ## License

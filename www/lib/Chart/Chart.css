@@ -1,0 +1,223 @@
+.chartarea {
+  resize: vertical;
+  overflow-y: hidden;
+/*  height: 100%;*/
+  position: relative;
+  min-height: 150px;
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+path,
+line {
+  stroke: #000;
+}
+
+.theme--dark path,
+.theme--dark line {
+  stroke: #FFF;
+}
+
+div:-webkit-full-screen {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  background-color: #000;
+}
+div:-webkit-full-screen .domain,
+div:-webkit-full-screen text {
+  stroke: #FFF;
+  font: 14px Courier;
+}
+div:-webkit-full-screen .tick > line {
+  stroke: #444;
+}
+div:-webkit-full-screen .menu > i {
+  color: white;
+}
+div:-webkit-full-screen .chart {
+  background-color: inherit;
+}
+svg {
+  position: absolute;
+  font: 0.6em sans-serif;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.axis {
+  shape-rendering: crispEdges;
+  display: block;
+}
+.grid .tick > line {
+  stroke: #BBB;
+  stroke-dasharray: 3;
+}
+.theme--dark .grid .tick > line {
+  stroke: #484848;
+}
+.x.axis .minor {
+  /*stroke-opacity: .5;*/
+}
+.domain {
+  fill: none;
+}
+.chart {
+  /* not work in linux */
+  /*background-color: #FFF;  */
+}
+.theme--dark .chart {
+  background-color: #000;
+}
+.theme--dark text {
+  fill: #ccc;
+}
+.theme--dark .chart path {
+  stroke: #FFF;
+}
+.chart path {
+  stroke-width: 1;
+  fill: none;
+  shape-rendering: optimizeSpeed;
+  vector-effect: non-scaling-stroke;
+}
+.lines, .discrete {
+  transform: scale(1, -1);
+}
+
+.event-rect {
+  fill: transparent;
+}
+.event-rect.y {
+  cursor: n-resize;
+}
+
+.tooltip {
+  display: none;
+  position: fixed;
+  margin: 20px;
+  padding: 0;
+  background-color: #FFF;
+  -webkit-box-shadow: 3px 3px 7px -1px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 3px 3px 7px -1px rgba(0, 0, 0, 0.75);
+  box-shadow: 3px 3px 7px -1px rgba(0, 0, 0, 0.75);
+  /*opacity: .9;*/
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.theme--dark .tooltip {
+  background-color: #000;
+}
+.tooltip table {
+  font-size: 12px;
+  font-family: Roboto, sans-serif;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.tooltip table tr {
+  border: 1px solid #ccc;
+}
+.tooltip table td {
+  border-left: 1px dotted #999;
+  padding: 3px 6px;
+}
+.tooltip table td:nth-child(3) {
+  color: #333;
+}
+.theme--dark .tooltip table td:nth-child(3) {
+  color: #ccc;
+}
+.tooltip table caption {
+  font-weight: bold;
+  padding: .3em;
+  background-color: #aaa;
+  color: #fff;
+}
+line.cursor {
+  stroke: #999;
+  shape-rendering: crispEdges;
+}
+.legend {
+  font-family: Roboto, sans-serif;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  display: block;
+  position: sticky;
+  /*top: calc(100% - 25px);*/
+  top: 10px;
+  left: 0px;
+  right: 0px;
+  list-style: none;
+  text-align: center;
+}
+.legend li {
+  padding-left: 20px;
+  display: inline-block;
+  cursor: pointer;
+}
+.legend li::before {
+  font-family: "Material Design Icons";
+  content: "\F132";
+  padding-right: 3px;
+}
+.legend li.unchecked::before {
+  content: "\F131";
+}
+.hidden {
+  display: none;
+}
+
+
+.chart-contextmenu {
+  position: fixed;
+  display: block;
+  z-index: 1000;
+}
+
+.chart-contextmenu ul {
+  position: absolute;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chart-contextmenu ul li {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 12px;
+  min-width: 200px;
+}
+
+.chart-contextmenu ul li:hover {
+  background-color: #eaeaea;
+}
