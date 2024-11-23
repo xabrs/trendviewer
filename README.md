@@ -20,10 +20,10 @@
 
 ## Installation
 
-1. Download the archive.
+1. Download the latest [archive](https://github.com/xabrs/trendviewer/releases).
 2. Run `run.bat` on Windows or `run.sh` on Linux.
 3. Open the web interface in your browser.
-4. Edit `server.py` according to your needs and use it.
+4. Edit `trend_viewer.py` according to your needs and use it.
 
 
 ## License
